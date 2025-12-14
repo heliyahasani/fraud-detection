@@ -25,3 +25,20 @@ env/
 
 # pytest
 .pytest_cache/
+
+# Data files (large, download via data/download_data.py)
+*.csv
+*.parquet
+data/raw/
+data/processed/
+
+# Models
+models/saved/
+*.joblib
+*.pkl
+
+# MLflow
+mlruns/
+
+# Outputs
+outputs/
