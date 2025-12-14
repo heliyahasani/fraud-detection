@@ -160,7 +160,7 @@ class Trainer:
             ])
 
     def cross_validate(
-        self, X: pd.DataFrame, y: pd.Series, scoring: str = "f1"
+        self, X: pd.DataFrame, y: pd.Series, scoring: str = "f1", verbose: int = 0
     ) -> dict:
         """Run stratified k-fold cross-validation."""
         model = self.get_model()
@@ -169,7 +169,7 @@ class Trainer:
             shuffle=True,
             random_state=self.config.random_state,
         )
-        scores = cross_val_score(model, X, y, cv=cv, scoring=scoring)
+        scores = cross_val_score(model, X, y, cv=cv, scoring=scoring, verbose=verbose)
 
         return {"mean": scores.mean(), "std": scores.std(), "scores": scores.tolist()}
 
@@ -179,18 +179,31 @@ class Trainer:
         y: pd.Series,
         param_grid: dict | None = None,
         scoring: str = "f1",
+        verbose: bool = True,
     ) -> dict:
         """Grid search for best hyperparameters."""
         param_grid = param_grid or self.PARAM_GRIDS.get(self.config.model_type, {})
         model = self.get_model()
+
+        # Calculate total combinations
+        n_combinations = 1
+        for values in param_grid.values():
+            n_combinations *= len(values)
+        total_fits = n_combinations * self.config.cv_folds
+
+        if verbose:
+            print(f"Tuning {self.config.model_type.value}: {n_combinations} combinations × {self.config.cv_folds} folds = {total_fits} fits")
 
         cv = StratifiedKFold(
             n_splits=self.config.cv_folds,
             shuffle=True,
             random_state=self.config.random_state,
         )
-        search = GridSearchCV(model, param_grid, cv=cv, scoring=scoring, n_jobs=-1)
+        search = GridSearchCV(model, param_grid, cv=cv, scoring=scoring, n_jobs=-1, verbose=1 if verbose else 0)
         search.fit(X, y)
+
+        if verbose:
+            print(f"Best score: {search.best_score_:.4f}")
 
         self.model = search.best_estimator_
         return {"best_params": search.best_params_, "best_score": search.best_score_}
@@ -229,15 +242,23 @@ class Trainer:
 
     @staticmethod
     def compare_models(
-        X: pd.DataFrame, y: pd.Series, cv_folds: int = 5, scoring: str = "f1"
+        X: pd.DataFrame, y: pd.Series, cv_folds: int = 5, scoring: str = "f1", verbose: bool = True
     ) -> pd.DataFrame:
         """Compare all models using cross-validation."""
         results = []
+        models = list(ModelType)
+        total = len(models)
 
-        for model_type in ModelType:
+        for i, model_type in enumerate(models, 1):
+            if verbose:
+                print(f"[{i}/{total}] Training {model_type.value}...", end=" ", flush=True)
+
             config = TrainConfig(model_type=model_type, cv_folds=cv_folds)
             trainer = Trainer(config)
             cv_result = trainer.cross_validate(X, y, scoring=scoring)
+
+            if verbose:
+                print(f"done ({scoring}={cv_result['mean']:.3f})")
 
             results.append({
                 "model": model_type.value,
