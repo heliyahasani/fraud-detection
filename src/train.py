@@ -6,8 +6,6 @@ from enum import Enum
 from typing import Any
 
 import mlflow
-
-logger = logging.getLogger(__name__)
 import numpy as np
 import pandas as pd
 from sklearn.ensemble import RandomForestClassifier
@@ -20,8 +18,8 @@ from sklearn.model_selection import (
     validation_curve,
 )
 from sklearn.neural_network import MLPClassifier
-from sklearn.preprocessing import StandardScaler
 from sklearn.pipeline import Pipeline
+from sklearn.preprocessing import StandardScaler
 from xgboost import XGBClassifier
 
 # Try to import cuML for GPU-accelerated sklearn models
@@ -31,6 +29,8 @@ try:
     CUML_AVAILABLE = True
 except ImportError:
     CUML_AVAILABLE = False
+
+logger = logging.getLogger(__name__)
 
 
 class ModelType(str, Enum):

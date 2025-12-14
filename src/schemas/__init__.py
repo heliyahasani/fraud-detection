@@ -1,7 +1,7 @@
 """Pydantic schemas for data validation."""
 
-from .transaction import Transaction
 from .features import Features
 from .prediction import Prediction
+from .transaction import Transaction
 
-__all__ = ["Transaction", "Features", "Prediction"]
+__all__ = ["Features", "Prediction", "Transaction"]

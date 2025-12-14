@@ -20,15 +20,15 @@ class Transaction(BaseModel):
     city: str
     state: str = Field(min_length=2, max_length=2)
     zip: int
-    lat: float 
-    long: float = 
+    lat: float
+    long: float
     city_pop: int = Field(ge=0)
     job: str
     dob: date
     trans_num: str
     unix_time: int
     merch_lat: float
-    merch_long: float = 
+    merch_long: float
     is_fraud: int = Field(ge=0, le=1)
 
     model_config = {"extra": "forbid"}

@@ -1,7 +1,5 @@
 """Tests for data loading and preprocessing."""
 
-import numpy as np
-
 from src.data import DataLoader
 
 
